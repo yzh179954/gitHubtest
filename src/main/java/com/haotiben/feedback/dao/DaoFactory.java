@@ -37,6 +37,7 @@ public abstract class DaoFactory {
 	 * @param connection
 	 */
 	public abstract void beginTransaction() throws Exception;
+
 	/**
 	 * 提交事务
 	 *
@@ -50,15 +51,71 @@ public abstract class DaoFactory {
 	 * @throws Exception
 	 */
 	public abstract void rollBack() throws Exception;
+
 	/**
 	 * 关闭连接
+	 *
 	 * @throws Exception
 	 */
 	public abstract void release() throws Exception;
+
 	/**
 	 * 获取RemarkDao
+	 *
 	 * @return
 	 * @throws Exception
 	 */
 	public abstract RemarkDao getRemarkDao() throws Exception;
+
+	/**
+	 * 获取QuestionAnalysisAnswerDao
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract QuestionAnalysisAnswerDao getQuestionAnalysisAnswerDao()
+			throws Exception;
+
+	/**
+	 * 获取QuestionDao
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract QuestionDao getQuestionDao() throws Exception;
+
+	/**
+	 * 获取QuestionRemarkDao
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract QuestionRemarkDao getQuestionRemarkDao() throws Exception;
+
+	/**
+	 * 获取SubjectDao
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract SubjectDao getSubjectDao() throws Exception;
+
+	/**
+	 * 获取SchoolStageDao
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract SchoolStageDao getSchoolStageDao() throws Exception;
+
+	/**
+	 * 获取BaseInfoDao
+	 *
+	 * @return
+	 * @throws Exception
+	 */
+	public abstract BaseInfoDao getBaseInfoDao() throws Exception;
+
+	public abstract QuestionKnowledgeDao getQuestionKnowledge()
+			throws Exception;
 }

@@ -20,8 +20,8 @@ public class StudentController {
 		try {
 			ClientResponse response = StringUtil.getWebResource(url+"user.json?username="+studentId+"").get(
 					ClientResponse.class);
-			StudentInfo studentInfo = response.getEntity(StudentInfo.class);
-			System.out.println("-------------"+studentInfo.getParent_email());
+			sinfo = response.getEntity(StudentInfo.class);
+			System.out.println("-------------"+sinfo.getParent_email());
 		} catch (Exception e) {
 			log.error("", e);
 		}

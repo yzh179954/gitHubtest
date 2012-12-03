@@ -2,8 +2,15 @@ package com.haotiben.feedback.dao.impl;
 
 import java.sql.Connection;
 
+import com.haotiben.feedback.dao.BaseInfoDao;
 import com.haotiben.feedback.dao.DaoFactory;
+import com.haotiben.feedback.dao.QuestionAnalysisAnswerDao;
+import com.haotiben.feedback.dao.QuestionDao;
+import com.haotiben.feedback.dao.QuestionKnowledgeDao;
+import com.haotiben.feedback.dao.QuestionRemarkDao;
 import com.haotiben.feedback.dao.RemarkDao;
+import com.haotiben.feedback.dao.SchoolStageDao;
+import com.haotiben.feedback.dao.SubjectDao;
 import com.haotiben.feedback.database.Database;
 
 public class DaoFactoryImpl extends DaoFactory {
@@ -54,5 +61,56 @@ public class DaoFactoryImpl extends DaoFactory {
 		dao.setConnection(getConnection());
 		return dao;
 	}
+
+	@Override
+	public QuestionAnalysisAnswerDao getQuestionAnalysisAnswerDao()
+			throws Exception {
+		QuestionAnalysisAnswerDaoImpl dao = new QuestionAnalysisAnswerDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
+	@Override
+	public QuestionDao getQuestionDao() throws Exception {
+		QuestionDaoImpl dao = new QuestionDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
+	@Override
+	public QuestionRemarkDao getQuestionRemarkDao() throws Exception {
+		QuestionRemarkDaoImpl dao = new QuestionRemarkDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
+	@Override
+	public SubjectDao getSubjectDao() throws Exception {
+		SubjectDaoImpl dao = new SubjectDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
+	@Override
+	public SchoolStageDao getSchoolStageDao() throws Exception {
+		SchoolStageDaoImpl dao = new SchoolStageDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
+	@Override
+	public BaseInfoDao getBaseInfoDao() throws Exception {
+		BaseInfoDaoImpl dao = new BaseInfoDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
+	@Override
+	public QuestionKnowledgeDao getQuestionKnowledge() throws Exception {
+		QuestionKnowledgeDaoImpl dao = new QuestionKnowledgeDaoImpl();
+		dao.setConnection(getConnection());
+		return dao;
+	}
+
 
 }

@@ -3,6 +3,7 @@ package com.haotiben.feedback.dao;
 import java.util.List;
 
 import com.haotiben.feedback.VO.Page;
+import com.haotiben.feedback.model.QuestionRemark;
 import com.haotiben.feedback.model.Remark;
 
 public interface RemarkDao {
@@ -16,7 +17,7 @@ public interface RemarkDao {
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Remark> getPageRemarks(String sql, Page page) throws Exception;
+	public List<Remark> getPageRemarks(String sql) throws Exception;
 
 	/**
 	 * 获取总记录数的分页对象
@@ -26,5 +27,12 @@ public interface RemarkDao {
 	 * @return
 	 * @throws Exception
 	 */
-	public Page getPage(String sql, int pageCount) throws Exception;
+	public Page getPage(String sql, int pageCount,int pageSize) throws Exception;
+	/**
+	 * 根据试题编号查询该题的反馈信息
+	 * @param questionId
+	 * @return
+	 * @throws Exception
+	 */
+	public QuestionRemark getRemark(long questionId) throws Exception;
 }

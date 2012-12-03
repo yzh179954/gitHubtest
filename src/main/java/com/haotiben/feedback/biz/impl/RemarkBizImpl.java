@@ -7,12 +7,13 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.haotiben.feedback.VO.Page;
+import com.haotiben.feedback.VO.SearchValue;
 import com.haotiben.feedback.biz.RemarkBiz;
 import com.haotiben.feedback.dao.DaoFactory;
 import com.haotiben.feedback.dao.RemarkDao;
 import com.haotiben.feedback.json.FeedBack;
+import com.haotiben.feedback.model.QuestionRemark;
 import com.haotiben.feedback.model.Remark;
-import com.haotiben.feedback.model.SearchValue;
 
 public class RemarkBizImpl implements RemarkBiz {
 	private static Logger log = Logger.getLogger(RemarkBizImpl.class);
@@ -24,16 +25,26 @@ public class RemarkBizImpl implements RemarkBiz {
 		FeedBack fb = new FeedBack();
 		Page page = null;
 		List<Remark> remarks = null;
-		SearchValue sv = null;
+		SearchValue sv = new SearchValue();
 		try {
 			factory = DaoFactory.newInstance();
 			factory.beginTransaction();
 			rDao = factory.getRemarkDao();
 			sv = getSearchValue(json);
-			page = rDao.getPage(getSql(sv, "totalRow"), sv.pageCount);
-			remarks = rDao.getPageRemarks(getSql(sv, "RS"), page);
-			factory.commit();
-			fb.remarks = remarks;
+			page = rDao.getPage(getSql(sv, "totalRow", page), sv.pageCount,
+					sv.pageSize);
+			log.info("查询总记录数为： " + page.getTotalRow() + " 當前頁 : "
+					+ page.getCount() + " 总页数: " + page.getTotal());
+			if ((page.getCount() < page.getTotal() || page.getCount() == page
+					.getTotal()) && page.getTotalRow() > 0) {
+				remarks = rDao.getPageRemarks(getSql(sv, "RS", page));
+				log.info("查询当前页的记录数 : " + remarks.size());
+				factory.commit();
+				fb.remarks = remarks;
+				fb.total = page.getTotal();
+				fb.currentPage = page.getCount();
+				fb.pageSize = page.getPageSize();
+			}
 		} catch (Exception e) {
 			log.error("方法  getFeedBack 出现异常......", e);
 			factory.rollBack();
@@ -78,25 +89,70 @@ public class RemarkBizImpl implements RemarkBiz {
 	 * @return
 	 * @throws Exception
 	 */
-	public String getSql(SearchValue sv, String type) throws Exception {
+	public String getSql(SearchValue sv, String type, Page page)
+			throws Exception {
 		StringBuffer sql = new StringBuffer("");
 		try {
 			if (type.equals("totalRow")) {
 				// 查询记录数的SQL
-				sql.append("SELECT count(*) ");
+				sql.append("SELECT count(distinct question.ID) ");
 			}
 			if (type.equals("RS")) {
 				// 查询结果集的SQL
-				sql.append("SELECT question.ID as questionId,question.IMAGE_URL as imageUrl,question.STUDENT_USERNAME as studentUserName,question_analysis_answer.TEACHER_USERNAME as teacherUserName,question_remark.REMARK_TYPE as remarkType,question_remark.CREATE_AT as remarkTime,question_remark.REMARK as remark ");
+				sql.append("SELECT distinct question.ID as questionId,question.IMAGE_URL as imageUrl,question.STUDENT_USERNAME as studentUserName,question_analysis_answer.TEACHER_USERNAME as teacherUserName,question_remark.REMARK_TYPE as remarkType,question_remark.CREATE_AT as remarkTime,question_remark.REMARK as remark ");
 			}
-			sql.append("from question,question_analysis_answer,question_remark where question.ID=question_analysis_answer.QUESTION_ID=question_remark.QUESTION_ID ");
+			sql.append("from question,question_analysis_answer,question_remark where question.ID=question_analysis_answer.QUESTION_ID and question.ID=question_remark.QUESTION_ID ");
 			// 开始组装动态参数条件
-			// /////////////////////////////
+			if(sv.remarkType != 0)
+				sql.append(" and question_remark.REMARK_TYPE = " + sv.remarkType);
+			else
+				sql.append(" and (question_remark.REMARK_TYPE = 1 or question_remark.REMARK_TYPE = 2) ");
+			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
+				sql.append(" and question.SCHOOL_STAGE_CODE = '"
+						+ sv.schoolStageCode + "'");
+			if (sv.studentUserName != null && !sv.studentUserName.equals(""))
+				sql.append(" and question.STUDENT_USERNAME = '"
+						+ sv.studentUserName + "'");
+			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
+				sql.append("and question.SUBJECT_CODE ='" + sv.subjectCode
+						+ "'");
+			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
+				sql.append(" and question_analysis_answer.TEACHER_USERNAME = '"
+						+ sv.teacherUserName + "'");
+			if (sv.order == null || sv.order.equals(""))
+				sv.order = "asc";
+			sql.append(" order by question_remark.CREATE_AT " + sv.order);
+			if (page != null)
+				sql.append(" limit " + page.getBeginIndex() + ","
+						+ page.getEndIndex() + " ");
+			log.info("sql : " + sql);
 		} catch (Exception e) {
 			log.error("方法  getSql 出现异常......", e);
 			throw e;
 		}
-		log.info("sql : " + sql);
 		return sql.toString();
+	}
+
+	@Override
+	public QuestionRemark getRemark(String questionId) throws Exception {
+		QuestionRemark remark = null;
+		try {
+			factory = DaoFactory.newInstance();
+			factory.beginTransaction();
+			rDao = factory.getRemarkDao();
+			remark = rDao.getRemark(Long.valueOf(questionId));
+		} catch (Exception e) {
+			log.error("方法  getRemark 出现异常......", e);
+			factory.rollBack();
+			throw e;
+		} finally {
+			try {
+				factory.release();
+				log.info("Connection is closed......");
+			} catch (Exception e2) {
+				log.error("Connection closeing error....", e2);
+			}
+		}
+		return remark;
 	}
 }

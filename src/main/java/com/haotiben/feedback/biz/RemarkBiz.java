@@ -1,6 +1,7 @@
 package com.haotiben.feedback.biz;
 
 import com.haotiben.feedback.json.FeedBack;
+import com.haotiben.feedback.model.QuestionRemark;
 
 public interface RemarkBiz {
 	/**
@@ -10,4 +11,11 @@ public interface RemarkBiz {
 	 * @throws Exception
 	 */
 	public FeedBack getFeedBack(String json)throws Exception;
+	/**
+	 * 根据试题ID查询该题的反馈信息
+	 * @param questionId
+	 * @return
+	 * @throws Exception
+	 */
+	public QuestionRemark getRemark(String questionId) throws Exception;
 }

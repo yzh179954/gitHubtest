@@ -8,15 +8,20 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 
+import com.haotiben.feedback.Exception.BOException;
+import com.haotiben.feedback.Exception.RestRequestException;
 import com.haotiben.feedback.biz.BizFactory;
+import com.haotiben.feedback.biz.QuestionFeedBackBiz;
 import com.haotiben.feedback.biz.RemarkBiz;
 import com.haotiben.feedback.json.FeedBack;
+import com.haotiben.feedback.json.QuestionFeedBack;
 
 @Path("/remark/")
 public class FeedBackController {
 	private static Logger log = Logger.getLogger(FeedBackController.class);
 	private BizFactory factory = null;
 	private RemarkBiz rBiz = null;
+	private QuestionFeedBackBiz qfbBiz = null;
 	/**
 	 * 查询用户意见反馈列表信息
 	 * @param json
@@ -27,18 +32,41 @@ public class FeedBackController {
 	@Path("/{json}.json")
 	@Produces(MediaType.APPLICATION_JSON)
 	public FeedBack getRemark(@PathParam("json") String json)throws Exception{
-		FeedBack fb = null;
+		FeedBack fb = new FeedBack();
 		try {
 			factory = BizFactory.newInstance();
 			rBiz = factory.getRemarkBiz();
-//			fb = rBiz.getFeedBack(sValue, pageCount);
+			fb = rBiz.getFeedBack(json);
+		}  catch (BOException be) {
+			log.info("getRemark------" + be.getErrorMessage().getError());
+			throw new RestRequestException(be.getErrorMessage());
 		} catch (Exception e) {
 			log.error("", e);
 		}
 		return fb;
 	}
-//	@GET
-//	@Path("/{questionId}.json")
-//	@Produces(MediaType.APPLICATION_JSON)
-//	public
+	/**
+	 * 获取单题反馈信息
+	 * @param questionId
+	 * @return
+	 * @throws Exception
+	 */
+	@GET
+	@Path("/questionid/{questionId}.json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public QuestionFeedBack getQuestionFeedBack(@PathParam("questionId") String questionId)throws Exception{
+		QuestionFeedBack questionFeedBack = new QuestionFeedBack();
+		try {
+			factory = BizFactory.newInstance();
+			qfbBiz = factory.getQuestionFeedBackBiz();
+			questionFeedBack = qfbBiz.getSingleQuestionFeedBack(questionId);
+		}  catch (BOException be) {
+			log.info("getQuestionFeedBack------" + be.getErrorMessage().getError());
+			throw new RestRequestException(be.getErrorMessage());
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return questionFeedBack;
+	}
+
 }

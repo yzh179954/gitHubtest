@@ -10,13 +10,19 @@ import com.sun.jersey.api.client.ClientResponse;
 public class TeacherController {
 	final static String url = Resource.getString("privilege");
 	private static Logger log = Logger.getLogger(StudentController.class);
+	/**
+	 * 从权限系统privilege获取老师信息
+	 * @param teacherId
+	 * @return
+	 * @throws Exception
+	 */
 	public TeacherInfo getTeacherInfo(String teacherId)throws Exception{
 		TeacherInfo tinfo = new TeacherInfo();
 		try {
 			ClientResponse response = StringUtil.getWebResource(url+teacherId+".json").get(
 					ClientResponse.class);
-			TeacherInfo teacherInfo = response.getEntity(TeacherInfo.class);
-			System.out.println("-------------"+teacherInfo.getUsername());
+			tinfo = response.getEntity(TeacherInfo.class);
+			System.out.println("-------------"+tinfo.getUsername());
 		} catch (Exception e) {
 			log.error("", e);
 		}
