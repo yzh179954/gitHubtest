@@ -6,6 +6,7 @@ import org.apache.log4j.Logger;
 
 import com.haotiben.feedback.Exception.BOException;
 import com.haotiben.feedback.biz.QuestionAnalysisAnswerBiz;
+import com.haotiben.feedback.common.Resource;
 import com.haotiben.feedback.dao.DaoFactory;
 import com.haotiben.feedback.dao.QuestionAnalysisAnswerDao;
 import com.haotiben.feedback.model.QuestionAnalysisAnswer;

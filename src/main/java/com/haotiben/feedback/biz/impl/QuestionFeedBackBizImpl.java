@@ -15,6 +15,7 @@ import com.haotiben.feedback.biz.QuestionFeedBackBiz;
 import com.haotiben.feedback.biz.QuestionKnowledgeBiz;
 import com.haotiben.feedback.biz.RemarkBiz;
 import com.haotiben.feedback.common.BeanUtil;
+import com.haotiben.feedback.common.ReflectUtil;
 import com.haotiben.feedback.controller.client.StudentController;
 import com.haotiben.feedback.controller.client.TeacherController;
 import com.haotiben.feedback.json.QuestionFeedBack;
@@ -38,6 +39,10 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 	public QuestionFeedBack getSingleQuestionFeedBack(String questionId)
 			throws Exception {
 		log.info("getSingleQuestionFeedBack questionId:" + questionId);
+		if(questionId == null || questionId.equals("")){
+			throw new BOException("a03201", "/remark/questionid/"
+					+ questionId + ".json");
+		}
 		QuestionFeedBack qFeedBack = new QuestionFeedBack();
 		QuestionJson questionJson = null;
 		StudentJson sinfo = null;
@@ -67,6 +72,7 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 			qFeedBack.teacher = tinfo;
 			qFeedBack.remark = remark;
 			qFeedBack.knowledges = qKnowledges;
+			ReflectUtil.reflect(qFeedBack);
 		} catch (BOException boe) {
 			log.error("", boe);
 			throw boe;
@@ -85,7 +91,7 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 			qkBiz = factory.getQuestionKnowledgeBiz();
 			questionKnowledgeList = qkBiz.getQuestionKnowledge(questionId);
 			for(QuestionKnowledge qk : questionKnowledgeList){
-				name =bBiz.getBaseInfo("knowledge", qk.getCode());
+				name =bBiz.getBaseInfo("KNOWLEDGE", qk.getCode());
 				log.info("getQuestionKnowledge   name = "+name);
 				qk.setName(name);
 			}
@@ -114,17 +120,20 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 				qJson = new QuestionJson();
 				qJson = (QuestionJson) BeanUtil.getPOToVO(qJson, question);
 				log.info("bookCode = "+qJson.bookCode);
-				qJson.bookName = bBiz.getBaseInfo("book", qJson.bookCode);
-				qJson.chapterName = bBiz.getBaseInfo("chapter",
+				qJson.bookName = bBiz.getBaseInfo("BOOK", qJson.bookCode);
+				qJson.chapterName = bBiz.getBaseInfo("CHAPTER",
 						qJson.chapterCode);
-				qJson.gradeName = bBiz.getBaseInfo("grade", qJson.gradeCode);
-				qJson.partName = bBiz.getBaseInfo("part", qJson.partCode);
-				qJson.schoolStageName = bBiz.getBaseInfo("school_stage",
+				qJson.gradeName = bBiz.getBaseInfo("GRADE", qJson.gradeCode);
+				qJson.partName = bBiz.getBaseInfo("PART", qJson.partCode);
+				qJson.schoolStageName = bBiz.getBaseInfo("SCHOOL_STAGE",
 						qJson.schoolStageCode);
-				qJson.subjectName = bBiz.getBaseInfo("subject",
+				qJson.subjectName = bBiz.getBaseInfo("SUBJECT",
 						qJson.subjectCode);
 				log.info(qJson.bookName+"-"+qJson.chapterName+"-"+qJson.gradeName+"-"+qJson.partName+"-"+qJson.schoolStageName+"-"+qJson.subjectName);
 			}
+		}  catch (BOException boe) {
+			log.error("", boe);
+			throw boe;
 		} catch (Exception e) {
 			log.error("方法  getQuestionFeedBack 出现异常......", e);
 			throw e;
@@ -172,6 +181,7 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 			if(stuInfo != null){
 				student = new StudentJson();
 				student = (StudentJson) BeanUtil.getPOToVO(student, stuInfo);
+				student.tel = student.username;
 			}
 		} catch (Exception e) {
 			log.error("", e);
@@ -196,6 +206,7 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 				teaJson = new TeacherJson();
 				teaJson = (TeacherJson) BeanUtil.getPOToVO(teaJson, teaInfo);
 			}
+			ReflectUtil.reflect(teaJson);
 		} catch (Exception e) {
 			log.error("", e);
 		}
@@ -213,8 +224,12 @@ public class QuestionFeedBackBizImpl implements QuestionFeedBackBiz {
 			throws Exception {
 		String teacherId = "0";
 		try {
-			if (analysises != null)
-				teacherId = analysises.get(1).getTeacherUserName();
+			if (analysises != null && analysises.size() > 0){
+				for(QuestionAnalysisAnswer qaa:analysises){
+					teacherId = qaa.getTeacherUserName();
+				}
+			}
+			log.info("getTeacherId   teacherId="+teacherId);
 		} catch (Exception e) {
 			log.error("", e);
 		}

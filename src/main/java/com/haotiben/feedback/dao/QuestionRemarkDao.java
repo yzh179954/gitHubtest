@@ -3,6 +3,7 @@ package com.haotiben.feedback.dao;
 import java.util.List;
 import java.util.Map;
 
+import com.haotiben.feedback.VO.TeacherTop;
 import com.haotiben.feedback.model.QuestionRemark;
 
 public interface QuestionRemarkDao {
@@ -33,4 +34,5 @@ public interface QuestionRemarkDao {
 	 * @throws Exception
 	 */
 	public List<QuestionRemark> getQuestionRemarks(Map<String,String> map) throws Exception;
+
 }

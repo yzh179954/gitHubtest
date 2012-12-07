@@ -19,7 +19,7 @@ public class TeacherController {
 	public TeacherInfo getTeacherInfo(String teacherId)throws Exception{
 		TeacherInfo tinfo = new TeacherInfo();
 		try {
-			ClientResponse response = StringUtil.getWebResource(url+teacherId+".json").get(
+			ClientResponse response = StringUtil.getWebResource(url+teacherId.trim()+".json").get(
 					ClientResponse.class);
 			tinfo = response.getEntity(TeacherInfo.class);
 			System.out.println("-------------"+tinfo.getUsername());

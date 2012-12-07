@@ -21,7 +21,7 @@ public class QuestionDaoImpl extends BaseDaoImpl implements QuestionDao {
 	public Question getQuestionById(long id) throws Exception {
 		log.info("getQuestionById  id:"+id);
 		Question question = null;
-		String sql = "select * from question where ID = ?";
+		String sql = "select * from QUESTION where ID = ?";
 		try {
 			conn = getConnection();
 			pstat = conn.prepareStatement(sql);
@@ -39,7 +39,7 @@ public class QuestionDaoImpl extends BaseDaoImpl implements QuestionDao {
 				question.setHelp(rs.getString("HELP"));
 				question.setId(rs.getLong("ID"));
 				question.setImageUrl(rs.getString("IMAGE_URL"));
-				question.setIsDel(rs.getInt("IS_DEL"));
+				//question.setIsDel(rs.getInt("IS_DEL"));
 				question.setPartCode(rs.getString("PART_CODE"));
 				question.setQuestionDesc(rs.getString("QUESTION_DESC"));
 				question.setSchoolStageCode(rs.getString("SCHOOL_STAGE_CODE"));

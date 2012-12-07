@@ -20,11 +20,11 @@ public class SchoolStageDaoImpl extends BaseDaoImpl implements SchoolStageDao {
 	@Override
 	public List<SchoolStage> getSchoolStageList() throws Exception {
 		List<SchoolStage> schoolStageList = new ArrayList<SchoolStage>();
-		String sql = "select * from basedata_school_stage where IS_DEL = ?";
+		String sql = "select * from BASEDATA_SCHOOL_STAGE where IS_DEL = ?";
 		try {
 			conn = getConnection();
 			pstat = conn.prepareStatement(sql);
-			pstat.setInt(1, 1);
+			pstat.setInt(1, 0);
 			log.info(pstat.toString());
 			rs = pstat.executeQuery();
 			while(rs.next()){

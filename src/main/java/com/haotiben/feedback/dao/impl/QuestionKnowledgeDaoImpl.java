@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 
 import com.haotiben.feedback.dao.QuestionKnowledgeDao;
 import com.haotiben.feedback.json.QuestionKnowledge;
-import com.haotiben.feedback.model.Knowledge;
 
 public class QuestionKnowledgeDaoImpl extends BaseDaoImpl implements
 		QuestionKnowledgeDao {
@@ -21,7 +20,7 @@ public class QuestionKnowledgeDaoImpl extends BaseDaoImpl implements
 	@Override
 	public List<QuestionKnowledge> getQuestionKnowledges(long questionId)
 			throws Exception {
-		String sql = "select * from question_knowledge_synthetically where QUESTION_ID = ? ";
+		String sql = "select * from QUESTION_KNOWLEDGE_SYNTHETICALLY where QUESTION_ID = ? ";
 		List<QuestionKnowledge> knowledgeList = new ArrayList<QuestionKnowledge>();
 		try {
 			conn = getConnection();

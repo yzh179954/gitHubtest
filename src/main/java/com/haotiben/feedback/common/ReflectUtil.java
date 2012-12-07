@@ -25,6 +25,7 @@ public class ReflectUtil {
 	public static Object reflect(Object obj) {
 		if (obj == null)
 			return null;
+		log.info("开始过滤NULL值。。。。。。。。。。");
 		Field[] fields = obj.getClass().getDeclaredFields();
 		try {
 			for (int j = 0; j < fields.length; j++) {

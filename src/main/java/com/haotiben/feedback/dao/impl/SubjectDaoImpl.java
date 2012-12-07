@@ -19,11 +19,11 @@ public class SubjectDaoImpl extends BaseDaoImpl implements SubjectDao {
 	@Override
 	public List<Subject> getSubjectList() throws Exception {
 		List<Subject> subjectList = new ArrayList<Subject>();
-		String sql = "select * from basedata_subject where IS_DEL = ?";
+		String sql = "select * from BASEDATA_SUBJECT where IS_DEL = ?";
 		try {
 			conn = getConnection();
 			pstat = conn.prepareStatement(sql);
-			pstat.setInt(1, 1);
+			pstat.setInt(1, 0);
 			log.info(pstat.toString());
 			rs = pstat.executeQuery();
 			while(rs.next()){

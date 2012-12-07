@@ -3,6 +3,7 @@ package com.haotiben.feedback.dao;
 import java.util.List;
 
 import com.haotiben.feedback.VO.Page;
+import com.haotiben.feedback.VO.TeacherTop;
 import com.haotiben.feedback.model.QuestionRemark;
 import com.haotiben.feedback.model.Remark;
 
@@ -35,4 +36,10 @@ public interface RemarkDao {
 	 * @throws Exception
 	 */
 	public QuestionRemark getRemark(long questionId) throws Exception;
+	/**
+	 * 获取老师不满意评价的排名
+	 * @return
+	 * @throws Exception
+	 */
+	public List<TeacherTop> getTeacherTop()throws Exception;
 }

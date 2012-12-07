@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.haotiben.feedback.common.Resource;
 import com.haotiben.feedback.dao.QuestionAnalysisAnswerDao;
 import com.haotiben.feedback.model.QuestionAnalysisAnswer;
 
@@ -18,12 +19,13 @@ public class QuestionAnalysisAnswerDaoImpl extends BaseDaoImpl implements
 	private ResultSet rs = null;
 	private PreparedStatement pstat = null;
 	private Connection conn = null;
+	private final static String BASE_URL = Resource.getString("baseurl");
 	@Override
 	public QuestionAnalysisAnswer getQuestionAnalysisAnswerById(long id)
 			throws Exception {
 		log.info("getQuestionAnalysisAnswerById  id:"+id);
 		QuestionAnalysisAnswer qaa = null;
-		String sql = "select * from question_analysis_answer where ID = ?";
+		String sql = "select * from QUESTION_ANALYSIS_ANSWER where ID = ?";
 		try {
 			conn = getConnection();
 			pstat = conn.prepareStatement(sql);
@@ -33,11 +35,11 @@ public class QuestionAnalysisAnswerDaoImpl extends BaseDaoImpl implements
 			while(rs.next()){
 				qaa = new QuestionAnalysisAnswer();
 				qaa.setAnalysisDesc(rs.getString("ANALYSIS_DESC"));
-				qaa.setAnalysisUrl(rs.getString("ANALYSIS_URL"));
+				qaa.setAnalysisUrl(BASE_URL+rs.getString("ANALYSIS_URL"));
 				qaa.setAnswer(rs.getString("ANSWER"));
 				qaa.setAnswerDesc(rs.getString("ANSWER_DESC"));
 				qaa.setAnswerNo(rs.getInt("ANSWER_NO"));
-				qaa.setAnswerUrl(rs.getString("ANSWER_URL"));
+				qaa.setAnswerUrl(BASE_URL+rs.getString("ANSWER_URL"));
 				qaa.setCreateAt(rs.getTimestamp("CREATE_AT"));
 				qaa.setId(rs.getLong("ID"));
 				qaa.setQuestionId(rs.getLong("QUESTION_ID"));
@@ -64,7 +66,7 @@ public class QuestionAnalysisAnswerDaoImpl extends BaseDaoImpl implements
 	public List<QuestionAnalysisAnswer> getQuestionAnalysisAnswerByQuestionId(
 			long questionId) throws Exception {
 		log.info("getQuestionAnalysisAnswerById  questionId:"+questionId);
-		String sql = "select * from question_analysis_answer where QUESTION_ID = ?";
+		String sql = "select * from QUESTION_ANALYSIS_ANSWER where QUESTION_ID = ?";
 		List<QuestionAnalysisAnswer> analysisList = new ArrayList<QuestionAnalysisAnswer>();
 		try {
 			conn = getConnection();
@@ -75,11 +77,11 @@ public class QuestionAnalysisAnswerDaoImpl extends BaseDaoImpl implements
 			while(rs.next()){
 				QuestionAnalysisAnswer qaa = new QuestionAnalysisAnswer();
 				qaa.setAnalysisDesc(rs.getString("ANALYSIS_DESC"));
-				qaa.setAnalysisUrl(rs.getString("ANALYSIS_URL"));
+				qaa.setAnalysisUrl(BASE_URL+rs.getString("ANALYSIS_URL"));
 				qaa.setAnswer(rs.getString("ANSWER"));
 				qaa.setAnswerDesc(rs.getString("ANSWER_DESC"));
 				qaa.setAnswerNo(rs.getInt("ANSWER_NO"));
-				qaa.setAnswerUrl(rs.getString("ANSWER_URL"));
+				qaa.setAnswerUrl(BASE_URL+rs.getString("ANSWER_URL"));
 				qaa.setCreateAt(rs.getTimestamp("CREATE_AT"));
 				qaa.setId(rs.getLong("ID"));
 				qaa.setQuestionId(rs.getLong("QUESTION_ID"));

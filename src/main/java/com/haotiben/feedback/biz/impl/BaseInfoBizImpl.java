@@ -46,17 +46,7 @@ public class BaseInfoBizImpl implements BaseInfoBiz {
 	public String getBaseInfoSql(String table,String code) throws Exception{
 		String sql = "";
 		try {
-//			if(table.equals("subject"))
-//				sql = "select NAME from basedata_subject where CODE = '"+code+"'";
-//			if(table.equals("book"))
-//				sql = "select NAME from basedata_book where CODE = '"+code+"'";
-//			if(table.equals("grade"))
-//				sql = "select NAME from basedata_grade where CODE = '"+code+"'";
-//			if(table.equals("chapter"))
-//				sql = "select NAME from basedata_chapter where CODE = '"+code+"'";
-//			if(table.equals("knowledge"))
-//				sql = "select NAME from basedata_knowledge where CODE = '"+code+"'";
-			sql = "select NAME from basedata_"+table+" where CODE = '"+code+"'";
+			sql = "select NAME from BASEDATA_"+table+" where CODE = '"+code+"'";
 			log.info("getBaseInfoSql sql = "+sql);
 		} catch (Exception e) {
 			log.error("",e);

@@ -4,29 +4,29 @@ import java.io.Serializable;
 
 public class TeacherJson implements Serializable {
 	private static final long serialVersionUID = 1L;
-	public long teacherId;//教师ID
-	public String teacherName;//教师姓名
 	public String realName;
+	private String mobile;
+	public String username;
 	public TeacherJson() {
 		super();
-	}
-	public long getTeacherId() {
-		return teacherId;
-	}
-	public void setTeacherId(long teacherId) {
-		this.teacherId = teacherId;
-	}
-	public String getTeacherName() {
-		return teacherName;
-	}
-	public void setTeacherName(String teacherName) {
-		this.teacherName = teacherName;
 	}
 	public String getRealName() {
 		return realName;
 	}
 	public void setRealName(String realName) {
 		this.realName = realName;
+	}
+	public String getMobile() {
+		return mobile;
+	}
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public void setUsername(String username) {
+		this.username = username;
 	}
 
 }

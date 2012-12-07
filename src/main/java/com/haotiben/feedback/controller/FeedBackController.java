@@ -15,6 +15,7 @@ import com.haotiben.feedback.biz.QuestionFeedBackBiz;
 import com.haotiben.feedback.biz.RemarkBiz;
 import com.haotiben.feedback.json.FeedBack;
 import com.haotiben.feedback.json.QuestionFeedBack;
+import com.haotiben.feedback.json.TeacherFeedBackTop;
 
 @Path("/remark/")
 public class FeedBackController {
@@ -68,5 +69,26 @@ public class FeedBackController {
 		}
 		return questionFeedBack;
 	}
-
+	/**
+	 * 获取老师被评价不满意的TOP列表名单
+	 * @return
+	 * @throws Exception
+	 */
+	@GET
+	@Path("/feedback/top.json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public TeacherFeedBackTop getTeacherFeedBackTop() throws Exception{
+		TeacherFeedBackTop tft = new TeacherFeedBackTop();
+		try {
+			factory = BizFactory.newInstance();
+			rBiz = factory.getRemarkBiz();
+			tft = rBiz.getTeacherFeedBackTop();
+		}  catch (BOException be) {
+			log.info("getTeacherFeedBackTop------" + be.getErrorMessage().getError());
+			throw new RestRequestException(be.getErrorMessage());
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return tft;
+	}
 }
