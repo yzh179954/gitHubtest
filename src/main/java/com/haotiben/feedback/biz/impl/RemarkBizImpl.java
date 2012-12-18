@@ -10,8 +10,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.haotiben.feedback.VO.Page;
 import com.haotiben.feedback.VO.SearchValue;
 import com.haotiben.feedback.VO.TeacherTop;
+import com.haotiben.feedback.biz.BaseInfoBiz;
 import com.haotiben.feedback.biz.BizFactory;
-import com.haotiben.feedback.biz.QuestionFeedBackBiz;
 import com.haotiben.feedback.biz.RemarkBiz;
 import com.haotiben.feedback.controller.client.TeacherController;
 import com.haotiben.feedback.dao.DaoFactory;
@@ -24,8 +24,10 @@ import com.haotiben.feedback.model.Remark;
 public class RemarkBizImpl implements RemarkBiz {
 	private static Logger log = Logger.getLogger(RemarkBizImpl.class);
 	private DaoFactory factory = null;
+	private BizFactory bizFactory = null;
 	private RemarkDao rDao = null;
 	private TeacherController tc = new TeacherController();
+	private BaseInfoBiz bBiz = null;
 	@Override
 	public FeedBack getFeedBack(String json) throws Exception {
 		FeedBack fb = new FeedBack();
@@ -37,13 +39,13 @@ public class RemarkBizImpl implements RemarkBiz {
 			factory.beginTransaction();
 			rDao = factory.getRemarkDao();
 			sv = getSearchValue(json);
-			page = rDao.getPage(getSql(sv, "totalRow", page), sv.pageCount,
+			page = rDao.getPage(getSql(sv, "totalRow", null), sv.pageCount,
 					sv.pageSize);
 			log.info("查询总记录数为： " + page.getTotalRow() + " 當前頁 : "
 					+ page.getCount() + " 总页数: " + page.getTotal());
 			if ((page.getCount() < page.getTotal() || page.getCount() == page
 					.getTotal()) && page.getTotalRow() > 0) {
-				remarks = rDao.getPageRemarks(getSql(sv, "RS", page));
+				remarks = getRemarks(sv,rDao,page);//rDao.getPageRemarks(getSql(sv, "RS", page));
 				log.info("查询当前页的记录数 : " + remarks.size());
 				factory.commit();
 				fb.remarks = remarks;
@@ -65,7 +67,27 @@ public class RemarkBizImpl implements RemarkBiz {
 		}
 		return fb;
 	}
-
+	/**
+	 * 获取返回报表信息
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Remark> getRemarks (SearchValue sv,RemarkDao rDao,Page page) throws Exception{
+		List<Remark> remarks = null;
+		try {
+			bizFactory = BizFactory.newInstance();
+			bBiz = bizFactory.getBaseInfoBiz();
+			remarks = rDao.getPageRemarks(getSql(sv, "RS", page));
+			if(!remarks.isEmpty()){
+				for(Remark r : remarks){
+					r.subject =bBiz.getBaseInfo("SUBJECT", r.subject);
+				}
+			}
+		} catch (Exception e) {
+			log.error("",e);
+		}
+		return remarks;
+	}
 	/**
 	 * 将JSON字符串转化为对象SearchValue
 	 *
@@ -101,18 +123,20 @@ public class RemarkBizImpl implements RemarkBiz {
 		try {
 			if (type.equals("totalRow")) {
 				// 查询记录数的SQL
-				sql.append("SELECT count(distinct QUESTION.ID) ");
+				sql.append("SELECT count(QUESTION_REMARK.QUESTION_ID) ");
 			}
 			if (type.equals("RS")) {
 				// 查询结果集的SQL
-				sql.append("SELECT distinct QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION_REMARK.REMARK_TYPE as remarkType,QUESTION_REMARK.CREATE_AT as remarkTime,QUESTION_REMARK.REMARK as remark ");
+				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION_REMARK.REMARK_TYPE as remarkType,QUESTION_REMARK.CREATE_AT as remarkTime,QUESTION_REMARK.REMARK as remark,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime  ");
+
 			}
 			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER,QUESTION_REMARK where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID and QUESTION.ID=QUESTION_REMARK.QUESTION_ID ");
 			// 开始组装动态参数条件
-			if(sv.remarkType != -1)
-				sql.append(" and QUESTION_REMARK.REMARK_TYPE = " + sv.remarkType);
-			else
-				sql.append(" and (QUESTION_REMARK.REMARK_TYPE = 1 or QUESTION_REMARK.REMARK_TYPE = 0) ");
+			// if(sv.remarkType != -1)
+			// sql.append(" and QUESTION_REMARK.REMARK_TYPE = " +
+			// sv.remarkType);
+			// else
+			sql.append(" and (QUESTION_REMARK.REMARK_TYPE = 1 or QUESTION_REMARK.REMARK_TYPE = 0) ");
 			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
 				sql.append(" and QUESTION.SCHOOL_STAGE_CODE = '"
 						+ sv.schoolStageCode + "'");
@@ -166,14 +190,14 @@ public class RemarkBizImpl implements RemarkBiz {
 	@Override
 	public TeacherFeedBackTop getTeacherFeedBackTop() throws Exception {
 		TeacherFeedBackTop tft = new TeacherFeedBackTop();
-		List<TeacherTop>  tTop = new ArrayList<TeacherTop>();
+		List<TeacherTop> tTop = new ArrayList<TeacherTop>();
 		try {
 			factory = DaoFactory.newInstance();
 			factory.beginTransaction();
 			rDao = factory.getRemarkDao();
 			tTop = rDao.getTeacherTop();
 			factory.commit();
-			for(TeacherTop t : tTop){
+			for (TeacherTop t : tTop) {
 				t.name = tc.getTeacherInfo(t.userName).getRealName();
 			}
 			tft.teacherTop = tTop;

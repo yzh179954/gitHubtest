@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class Page implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private int rowTotal;// 总记录数
-	private int pageSize = 3;// 每页记录数
+	private int pageSize = 4;// 每页记录数
 	private int count;// 当前页码
 	private int total;// 总页数
 	private int beginIndex;// 起始记录下标
@@ -92,5 +92,7 @@ public class Page implements Serializable {
 	public int getEndIndex() {
 		return endIndex;
 	}
-
+public static void main(String[] args) {
+	new Page(11,1,10);
+}
 }

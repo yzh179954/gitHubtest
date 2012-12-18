@@ -37,6 +37,9 @@ public class RemarkDaoImpl extends BaseDaoImpl implements RemarkDao {
 				remark.remarkType = rs.getInt("remarkType");
 				remark.studentUserName = rs.getString("studentUserName");
 				remark.teacherUserName = rs.getString("teacherUserName");
+				remark.questionResolveTime = rs.getTimestamp("questionResolveTime");
+				remark.questionUpTime = rs.getTimestamp("questionUpTime");
+				remark.subject = rs.getString("subject");
 				remarks.add(remark);
 			}
 		} catch (Exception e) {
