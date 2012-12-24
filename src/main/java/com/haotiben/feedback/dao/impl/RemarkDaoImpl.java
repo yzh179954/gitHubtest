@@ -127,7 +127,7 @@ public class RemarkDaoImpl extends BaseDaoImpl implements RemarkDao {
 	@Override
 	public List<TeacherTop> getTeacherTop() throws Exception {
 		List<TeacherTop> tTop = new ArrayList<TeacherTop>();
-		String sql = "select QUESTION_REMARK.QUESTION_ID as qid,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacher,count(QUESTION_REMARK.QUESTION_ID) as number,QUESTION_REMARK.REMARK_TYPE as remark from  QUESTION_REMARK,QUESTION_ANALYSIS_ANSWER WHERE QUESTION_REMARK.QUESTION_ID = QUESTION_ANALYSIS_ANSWER.QUESTION_ID GROUP BY  qid HAVING remark = 0 ORDER BY number DESC  limit 10 ";
+		String sql = "select QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacher,count(QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME) as number,QUESTION_REMARK.REMARK_TYPE as remark from  QUESTION_REMARK,QUESTION_ANALYSIS_ANSWER WHERE QUESTION_REMARK.QUESTION_ID = QUESTION_ANALYSIS_ANSWER.QUESTION_ID GROUP BY  teacher  HAVING remark = 0 ORDER BY number DESC  limit 10 ";
 		try {
 			conn = getConnection();
 			pstat = conn.prepareStatement(sql);

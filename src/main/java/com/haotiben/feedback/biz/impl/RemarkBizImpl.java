@@ -28,6 +28,7 @@ public class RemarkBizImpl implements RemarkBiz {
 	private RemarkDao rDao = null;
 	private TeacherController tc = new TeacherController();
 	private BaseInfoBiz bBiz = null;
+
 	@Override
 	public FeedBack getFeedBack(String json) throws Exception {
 		FeedBack fb = new FeedBack();
@@ -45,7 +46,8 @@ public class RemarkBizImpl implements RemarkBiz {
 					+ page.getCount() + " 总页数: " + page.getTotal());
 			if ((page.getCount() < page.getTotal() || page.getCount() == page
 					.getTotal()) && page.getTotalRow() > 0) {
-				remarks = getRemarks(sv,rDao,page);//rDao.getPageRemarks(getSql(sv, "RS", page));
+				remarks = getRemarks(sv, rDao, page);// rDao.getPageRemarks(getSql(sv,
+														// "RS", page));
 				log.info("查询当前页的记录数 : " + remarks.size());
 				factory.commit();
 				fb.remarks = remarks;
@@ -67,27 +69,31 @@ public class RemarkBizImpl implements RemarkBiz {
 		}
 		return fb;
 	}
+
 	/**
 	 * 获取返回报表信息
+	 *
 	 * @return
 	 * @throws Exception
 	 */
-	public List<Remark> getRemarks (SearchValue sv,RemarkDao rDao,Page page) throws Exception{
+	public List<Remark> getRemarks(SearchValue sv, RemarkDao rDao, Page page)
+			throws Exception {
 		List<Remark> remarks = null;
 		try {
 			bizFactory = BizFactory.newInstance();
 			bBiz = bizFactory.getBaseInfoBiz();
 			remarks = rDao.getPageRemarks(getSql(sv, "RS", page));
-			if(!remarks.isEmpty()){
-				for(Remark r : remarks){
-					r.subject =bBiz.getBaseInfo("SUBJECT", r.subject);
+			if (!remarks.isEmpty()) {
+				for (Remark r : remarks) {
+					r.subject = bBiz.getBaseInfo("SUBJECT", r.subject);
 				}
 			}
 		} catch (Exception e) {
-			log.error("",e);
+			log.error("", e);
 		}
 		return remarks;
 	}
+
 	/**
 	 * 将JSON字符串转化为对象SearchValue
 	 *
@@ -132,11 +138,11 @@ public class RemarkBizImpl implements RemarkBiz {
 			}
 			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER,QUESTION_REMARK where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID and QUESTION.ID=QUESTION_REMARK.QUESTION_ID ");
 			// 开始组装动态参数条件
-			// if(sv.remarkType != -1)
-			// sql.append(" and QUESTION_REMARK.REMARK_TYPE = " +
-			// sv.remarkType);
-			// else
-			sql.append(" and (QUESTION_REMARK.REMARK_TYPE = 1 or QUESTION_REMARK.REMARK_TYPE = 0) ");
+			if (sv.remarkType != -1)
+				sql.append(" and QUESTION_REMARK.REMARK_TYPE = "
+						+ sv.remarkType);
+			else
+				sql.append(" and (QUESTION_REMARK.REMARK_TYPE = 1 or QUESTION_REMARK.REMARK_TYPE = 0) ");
 			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
 				sql.append(" and QUESTION.SCHOOL_STAGE_CODE = '"
 						+ sv.schoolStageCode + "'");
