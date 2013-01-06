@@ -129,7 +129,7 @@ public class RemarkBizImpl implements RemarkBiz {
 		try {
 			if (type.equals("totalRow")) {
 				// 查询记录数的SQL
-				sql.append("SELECT count(QUESTION_REMARK.QUESTION_ID) ");
+				sql.append("SELECT count(DISTINCT QUESTION_REMARK.QUESTION_ID) ");
 			}
 			if (type.equals("RS")) {
 				// 查询结果集的SQL
@@ -157,7 +157,9 @@ public class RemarkBizImpl implements RemarkBiz {
 						+ sv.teacherUserName + "'");
 			if (sv.order == null || sv.order.equals(""))
 				sv.order = "asc";
-			sql.append(" order by QUESTION_REMARK.CREATE_AT " + sv.order);
+			if(type.equals("RS"))
+				sql.append(" GROUP BY QUESTION.ID ");
+			sql.append("  order by QUESTION_REMARK.CREATE_AT " + sv.order);
 			if (page != null)
 				sql.append(" limit " + page.getBeginIndex() + ","
 						+ page.getPageSize() + " ");
