@@ -3,13 +3,16 @@ package com.haotiben.feedback.dao.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.haotiben.feedback.VO.Page;
 import com.haotiben.feedback.dao.QuestionDao;
 import com.haotiben.feedback.model.Question;
+import com.haotiben.feedback.model.Remark;
 
 public class QuestionDaoImpl extends BaseDaoImpl implements QuestionDao {
 	private static Logger log = Logger.getLogger(QuestionDaoImpl.class);
@@ -77,6 +80,76 @@ public class QuestionDaoImpl extends BaseDaoImpl implements QuestionDao {
 			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public List<Remark> getPageRemarks(String sql) throws Exception {
+		List<Remark> remarks = new ArrayList<Remark>();
+		try {
+			conn = getConnection();
+			pstat = conn.prepareStatement(sql);
+			log.info(pstat.toString());
+			rs = pstat.executeQuery();
+			while (rs.next()) {
+				Remark remark = new Remark();
+				remark.imageUrl = rs.getString("imageUrl");
+				remark.questionId = rs.getLong("questionId");
+//				remark.remark = rs.getString("remark");
+//				remark.remarkTime = rs.getTimestamp("remarkTime");
+//				remark.remarkType = rs.getInt("remarkType");
+				remark.studentUserName = rs.getString("studentUserName");
+				remark.teacherUserName = rs.getString("teacherUserName");
+				remark.questionResolveTime = rs.getTimestamp("questionResolveTime");
+				remark.questionUpTime = rs.getTimestamp("questionUpTime");
+				remark.subject = rs.getString("subject");
+				remarks.add(remark);
+			}
+		} catch (Exception e) {
+			log.error("查询Remark出现异常......", e);
+			throw e;
+		} finally {
+			try {
+				if (pstat != null)
+					pstat.close();
+				if (rs != null)
+					rs.close();
+			} catch (Exception ex) {
+				log.error("查询Remark关闭RS或者PS出现异常......", ex);
+				throw ex;
+			}
+		}
+		return remarks;
+	}
+
+	@Override
+	public Page getPage(String sql, int pageCount, int pageSize)
+			throws Exception {
+		int totalRow = 0;
+		Page page = null;
+		try {
+			conn = getConnection();
+			pstat = conn.prepareStatement(sql);
+			log.info(pstat.toString());
+			rs = pstat.executeQuery();
+			while (rs.next()) {
+				totalRow = rs.getInt(1);
+			}
+			page = new Page(totalRow, pageCount, pageSize);
+		} catch (Exception e) {
+			log.error("查询Question出现异常......", e);
+			throw e;
+		} finally {
+			try {
+				if (pstat != null)
+					pstat.close();
+				if (rs != null)
+					rs.close();
+			} catch (Exception ex) {
+				log.error("查询Question关闭RS或者PS出现异常......", ex);
+				throw ex;
+			}
+		}
+		return page;
 	}
 
 }
