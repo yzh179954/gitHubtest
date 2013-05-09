@@ -150,7 +150,7 @@ public class RemarkBizImpl implements RemarkBiz {
 				sql.append(" and QUESTION.STUDENT_USERNAME = '"
 						+ sv.studentUserName + "'");
 			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
-				sql.append("and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
+				sql.append(" and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
 						+ "'");
 			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
 				sql.append(" and QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME = '"

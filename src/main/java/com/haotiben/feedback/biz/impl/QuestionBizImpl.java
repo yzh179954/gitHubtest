@@ -72,6 +72,7 @@ public class QuestionBizImpl implements QuestionBiz {
 				fb.total = page.getTotal();
 				fb.currentPage = page.getCount();
 				fb.pageSize = page.getPageSize();
+				fb.count = page.getTotalRow();
 			}
 		} catch (Exception e) {
 			log.error("方法  getFeedBack 出现异常......", e);
@@ -152,7 +153,7 @@ public class QuestionBizImpl implements QuestionBiz {
 				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime  ");
 
 			}
-			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID  ");
+			sql.append(" from QUESTION left join QUESTION_ANALYSIS_ANSWER on QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID  where QUESTION.ID > 0  and QUESTION.HELP = 1 ");
 			// 开始组装动态参数条件
 
 			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
@@ -162,8 +163,15 @@ public class QuestionBizImpl implements QuestionBiz {
 				sql.append(" and QUESTION.STUDENT_USERNAME = '"
 						+ sv.studentUserName + "'");
 			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
-				sql.append("and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
+				sql.append(" and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
 						+ "'");
+			if(!sv.questionType.equals("all")){
+				if(sv.questionType == null || sv.questionType.equals("")){
+					sql.append(" and QUESTION.STATUS = ' ' ");
+				}else{
+					sql.append(" and QUESTION.STATUS = '"+sv.questionType+"' ");
+				}
+			}
 			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
 				sql.append(" and QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME = '"
 						+ sv.teacherUserName + "'");

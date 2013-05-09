@@ -8,6 +8,7 @@ public class SearchValue implements Serializable {
 	public String subjectCode;
 	public String studentUserName;
 	public String teacherUserName;
+	public String questionType;
 	public int remarkType;
 	public int pageCount;//当前页码
 	public String order;// 正反序

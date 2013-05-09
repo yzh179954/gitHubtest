@@ -12,6 +12,7 @@ public class FeedBack implements Serializable {
 	public int total;//总页数
 	public int pageSize;//当前页显示记录数
 	public int currentPage;//当前页
+	public int count;//总记录数
 	public FeedBack() {
 		super();
 	}
@@ -38,6 +39,12 @@ public class FeedBack implements Serializable {
 	}
 	public void setCurrentPage(int currentPage) {
 		this.currentPage = currentPage;
+	}
+	public int getCount() {
+		return count;
+	}
+	public void setCount(int count) {
+		this.count = count;
 	}
 
 }
