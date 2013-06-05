@@ -15,6 +15,7 @@ public class Remark implements Serializable {
 	public String subject;
 	public Date questionUpTime;
 	public Date questionResolveTime;
+	public Date questionFetchTime;
 	public Remark() {
 		super();
 	}

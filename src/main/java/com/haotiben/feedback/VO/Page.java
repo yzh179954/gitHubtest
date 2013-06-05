@@ -93,6 +93,6 @@ public class Page implements Serializable {
 		return endIndex;
 	}
 public static void main(String[] args) {
-	new Page(11,1,10);
+	new Page(11,2,10);
 }
 }

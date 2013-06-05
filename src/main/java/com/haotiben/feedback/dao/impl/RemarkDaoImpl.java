@@ -39,6 +39,7 @@ public class RemarkDaoImpl extends BaseDaoImpl implements RemarkDao {
 				remark.teacherUserName = rs.getString("teacherUserName");
 				remark.questionResolveTime = rs.getTimestamp("questionResolveTime");
 				remark.questionUpTime = rs.getTimestamp("questionUpTime");
+				remark.questionFetchTime=rs.getTimestamp("questionFetchTime");
 				remark.subject = rs.getString("subject");
 				remarks.add(remark);
 			}

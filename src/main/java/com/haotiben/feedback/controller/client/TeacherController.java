@@ -31,7 +31,8 @@ public class TeacherController {
 	public static void main(String[] args) {
 		TeacherController tc = new TeacherController();
 		try {
-			tc.getTeacherInfo("50");
+			TeacherInfo tinfo=tc.getTeacherInfo("liqin");
+			System.out.println(tinfo.getRealName());
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

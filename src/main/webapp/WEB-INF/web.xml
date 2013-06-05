@@ -34,4 +34,15 @@
 		<servlet-name>MyWebApplication</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
+	<!--  
+	<servlet>
+	<servlet-name>ExportExeclTest</servlet-name>
+	<servlet-class>com.haotiben.feedback.util.ExportExeclTest</servlet-class>
+	</servlet>
+	<servlet-mapping>
+	<servlet-name>ExportExeclTest</servlet-name>
+	<url-pattern>/servlet/ExportExeclTest</url-pattern>
+	
+	</servlet-mapping>
+	-->
 </web-app>

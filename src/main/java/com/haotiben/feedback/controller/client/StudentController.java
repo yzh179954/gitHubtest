@@ -30,7 +30,7 @@ public class StudentController {
 	public static void main(String[] args) {
 		StudentController sc = new StudentController();
 		try {
-			sc.getStudentInfo("test");
+			sc.getStudentInfo("as");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

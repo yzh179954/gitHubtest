@@ -8,10 +8,17 @@ public interface RemarkBiz {
 	/**
 	 * 获取反馈信息
 	 * @param json JSON格式参数转化的字符串
-	 * @return
+	 * @return  改方法返回包含分页数据
 	 * @throws Exception
 	 */
 	public FeedBack getFeedBack(String json)throws Exception;
+	/**
+	 * 获取反馈信息
+	 * @param json JSON格式参数转化的字符串
+	 * @return  改方法返回数据不含分页数据
+	 * @throws Exception
+	 */
+	public FeedBack getFeedbackExecl(String json) throws Exception;
 	/**
 	 * 根据试题ID查询该题的反馈信息
 	 * @param questionId

@@ -150,10 +150,10 @@ public class QuestionBizImpl implements QuestionBiz {
 			}
 			if (type.equals("RS")) {
 				// 查询结果集的SQL
-				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime  ");
+				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime ,QUESTION_FETCH.CREATE_AT as questionFetchTime ");
 
 			}
-			sql.append(" from QUESTION left join QUESTION_ANALYSIS_ANSWER on QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID  where QUESTION.ID > 0  and QUESTION.HELP = 1 ");
+			sql.append(" from QUESTION left join QUESTION_ANALYSIS_ANSWER on QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID left join QUESTION_FETCH on  QUESTION.ID =QUESTION_FETCH.QUESTION_ID where QUESTION.ID > 0  and QUESTION.HELP=1 ");
 			// 开始组装动态参数条件
 
 			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
@@ -165,9 +165,10 @@ public class QuestionBizImpl implements QuestionBiz {
 			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
 				sql.append(" and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
 						+ "'");
-			if(!sv.questionType.equals("all")){
+			if(!"all".equals(sv.questionType)){
+			//if(!sv.questionType.equals("all")){
 				if(sv.questionType == null || sv.questionType.equals("")){
-					sql.append(" and QUESTION.STATUS = ' ' ");
+//					sql.append(" and QUESTION.STATUS = ' ' ");
 				}else{
 					sql.append(" and QUESTION.STATUS = '"+sv.questionType+"' ");
 				}
@@ -175,6 +176,23 @@ public class QuestionBizImpl implements QuestionBiz {
 			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
 				sql.append(" and QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME = '"
 						+ sv.teacherUserName + "'");
+//			if(sv.datebegin!=null&&sv.dateend!=null){
+//			sql.append(" and questionResolveTime>='"+sv.datebegin+"' and questionResolveTime<='"+sv.dateend+"'");
+//			}
+//			else if(sv.datebegin!=null&&sv.dateend==null){
+//				sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"'");
+//
+//			}
+//			else if(sv.dateend!=null&&sv.datebegin==null){
+//				sql.append(" and QUESTION_REMARK.CREATE_AT<='"+sv.datebegin+"'");
+//			}
+			if(sv.datebegin !=null&&!"".equals(sv.datebegin)){
+				sql.append(" and QUESTION_ANALYSIS_ANSWER.CREATE_AT>='"+sv.datebegin+"'");
+			}
+			if(sv.dateend!=null&&!"".equals(sv.dateend)){
+				sql.append(" and QUESTION_ANALYSIS_ANSWER.CREATE_AT<='"+sv.dateend+"'");
+			}
+		//	sql.append("to_days(QUESTION.CREATE_AT)>=to_days(QUESTION.CREATE_AT)");
 			if (sv.order == null || sv.order.equals(""))
 				sv.order = "asc";
 			if(type.equals("RS"))
@@ -189,5 +207,51 @@ public class QuestionBizImpl implements QuestionBiz {
 			throw e;
 		}
 		return sql.toString();
+	}
+
+
+
+	public static void main(String[] args){
+		SearchValue sv=null;
+		try {
+			sv=new QuestionBizImpl().getSearchValue("{\"datebegin\":\"2012-11-23 14:50:01\"}");
+			System.out.println(sv.datebegin);
+			System.out.println(sv.dateend);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	@Override
+	public FeedBack getQuestionExecl(String json) throws Exception {
+		FeedBack fb = new FeedBack();
+		Page page = null;
+		List<Remark> remarks = null;
+		SearchValue sv = new SearchValue();
+		try {
+			factory = DaoFactory.newInstance();
+			factory.beginTransaction();
+			qDao = factory.getQuestionDao();
+			sv = getSearchValue(json);
+				remarks = getRemarks(sv, qDao, page);// rDao.getPageRemarks(getSql(sv,
+												// "RS", page));
+				log.info("查询当前页的记录数 : " + remarks.size());
+				factory.commit();
+				fb.remarks = remarks;
+
+
+		} catch (Exception e) {
+			log.error("方法  getFeedBack 出现异常......", e);
+			factory.rollBack();
+			throw e;
+		} finally {
+			try {
+				factory.release();
+				log.info("Connection is closed......");
+			} catch (Exception e2) {
+				log.error("Connection closeing error....", e2);
+			}
+		}
+		return fb;
 	}
 }

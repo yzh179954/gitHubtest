@@ -10,7 +10,7 @@ public class BaseInfoBizImpl implements BaseInfoBiz {
 	private static Logger log = Logger.getLogger(BaseInfoBizImpl.class);
 	private DaoFactory factory = null;
 	private BaseInfoDao bDao = null;
-	@Override
+
 	public String getBaseInfo(String table,String code) throws Exception {
 		String name = "";
 		String sql = "";

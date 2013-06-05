@@ -54,6 +54,7 @@ public class RemarkBizImpl implements RemarkBiz {
 				fb.total = page.getTotal();
 				fb.currentPage = page.getCount();
 				fb.pageSize = page.getPageSize();
+				fb.count=page.getTotalRow();
 			}
 		} catch (Exception e) {
 			log.error("方法  getFeedBack 出现异常......", e);
@@ -69,6 +70,7 @@ public class RemarkBizImpl implements RemarkBiz {
 		}
 		return fb;
 	}
+
 
 	/**
 	 * 获取返回报表信息
@@ -133,31 +135,52 @@ public class RemarkBizImpl implements RemarkBiz {
 			}
 			if (type.equals("RS")) {
 				// 查询结果集的SQL
-				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION_REMARK.REMARK_TYPE as remarkType,QUESTION_REMARK.CREATE_AT as remarkTime,QUESTION_REMARK.REMARK as remark,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime  ");
+				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION_REMARK.REMARK_TYPE as remarkType,QUESTION_REMARK.CREATE_AT as remarkTime,QUESTION_REMARK.REMARK as remark,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime,QUESTION_FETCH.CREATE_AT as questionfetchtime ");
 
 			}
-			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER,QUESTION_REMARK where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID and QUESTION.ID=QUESTION_REMARK.QUESTION_ID ");
+			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER,QUESTION_REMARK,QUESTION_FETCH where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID and QUESTION.ID=QUESTION_REMARK.QUESTION_ID and QUESTION.ID=QUESTION_FETCH.QUESTION_ID");
 			// 开始组装动态参数条件
 			if (sv.remarkType != -1)
 				sql.append(" and QUESTION_REMARK.REMARK_TYPE = "
 						+ sv.remarkType);
 			else
 				sql.append(" and (QUESTION_REMARK.REMARK_TYPE = 1 or QUESTION_REMARK.REMARK_TYPE = 0) ");
-			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
+			if (sv.schoolStageCode != null && !sv.schoolStageCode.trim().equals(""))
 				sql.append(" and QUESTION.SCHOOL_STAGE_CODE = '"
 						+ sv.schoolStageCode + "'");
-			if (sv.studentUserName != null && !sv.studentUserName.equals(""))
+			if (sv.studentUserName != null && !sv.studentUserName.trim().equals(""))
 				sql.append(" and QUESTION.STUDENT_USERNAME = '"
 						+ sv.studentUserName + "'");
-			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
+			if (sv.subjectCode != null && !sv.subjectCode.trim().equals(""))
 				sql.append(" and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
 						+ "'");
-			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
+			if (sv.teacherUserName != null && !sv.teacherUserName.trim().equals(""))
 				sql.append(" and QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME = '"
 						+ sv.teacherUserName + "'");
+
+//			if(sv.datebegin!=null&&!"".equals(sv.datebegin)&&sv.dateend!=null&&!"".equals(sv.dateend)){
+//			sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"' and QUESTION_REMARK.CREATE_AT<='"+sv.dateend+"'");
+//			}
+//			else if(sv.datebegin!=null&&sv.dateend==null){
+//				sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"'");
+//
+//			}
+//			else if(sv.dateend!=null&&sv.datebegin==null){
+//				sql.append(" and QUESTION_REMARK.CREATE_AT<='"+sv.dateend+"'");
+//			}
+			System.out.println("-----------"+sv.datebegin);
+			if(sv.datebegin !=null&&!"".equals(sv.datebegin)){
+				System.out.println("*********************");
+				sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"'");
+			}
+			if(sv.dateend!=null&&!"".equals(sv.dateend)){
+				sql.append(" and QUESTION_REMARK.CREATE_AT<='"+sv.dateend+"'");
+			}
 			if (sv.order == null || sv.order.equals(""))
 				sv.order = "asc";
 			if(type.equals("RS"))
+
+
 				sql.append(" GROUP BY QUESTION.ID ");
 			sql.append("  order by QUESTION_REMARK.CREATE_AT " + sv.order);
 			if (page != null)
@@ -222,5 +245,35 @@ public class RemarkBizImpl implements RemarkBiz {
 			}
 		}
 		return tft;
+	}
+
+
+	@Override
+	public FeedBack getFeedbackExecl(String json) throws Exception {
+		FeedBack fb = new FeedBack();
+		Page page = null;
+		List<Remark> remarks = null;
+		SearchValue sv = new SearchValue();
+		try {
+			factory = DaoFactory.newInstance();
+			factory.beginTransaction();
+			rDao = factory.getRemarkDao();
+			sv = getSearchValue(json);
+				remarks = getRemarks(sv, rDao, page);
+				factory.commit();
+				fb.remarks = remarks;
+		} catch (Exception e) {
+			log.error("方法  getFeedBack 出现异常......", e);
+			factory.rollBack();
+			throw e;
+		} finally {
+			try {
+				factory.release();
+				log.info("Connection is closed......");
+			} catch (Exception e2) {
+				log.error("Connection closeing error....", e2);
+			}
+		}
+		return fb;
 	}
 }

@@ -42,4 +42,29 @@ public class QuestionController {
 		}
 		return fb;
 	}
+
+	/*
+	*
+	*导出execl返回信息列表
+	*
+	*
+	*/
+	@GET
+	@Path("/exportexecl/{json}.json")
+	@Produces(MediaType.APPLICATION_JSON)
+	public FeedBack getQuestionExecl(@PathParam("json") String json)throws Exception{
+		FeedBack fb = new FeedBack();
+		try {
+			factory = BizFactory.newInstance();
+			qBiz = factory.getQuestionBiz();
+			fb = qBiz.getQuestionExecl(json);
+		}  catch (BOException be) {
+			log.info("getQuestion------" + be.getErrorMessage().getError());
+			throw new RestRequestException(be.getErrorMessage());
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return fb;
+	}
+
 }

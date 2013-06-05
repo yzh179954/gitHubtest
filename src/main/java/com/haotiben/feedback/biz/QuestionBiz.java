@@ -12,10 +12,18 @@ public interface QuestionBiz {
 	 */
 	public Question getQuestion(long questionId) throws Exception;
 	/**
-	 * 获取试题信息
+	 * 获取试题信息   返回分页的数据信息
 	 * @param json JSON格式参数转化的字符串
 	 * @return
 	 * @throws Exception
 	 */
 	public FeedBack getQuestion(String json)throws Exception;
+	/**
+	 * 获取试题信息   返回一个不分页的信息
+	 * @param json JSON格式参数转化的字符串
+	 * @return
+	 * @throws Exception
+	 */
+	public FeedBack getQuestionExecl(String json) throws Exception;
+
 }

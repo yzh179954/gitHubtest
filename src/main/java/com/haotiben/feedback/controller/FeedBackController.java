@@ -91,4 +91,28 @@ public class FeedBackController {
 		}
 		return tft;
 	}
+	/*
+	*
+	*导出execl返回信息列表
+	*
+	*
+	*/
+
+		@GET
+		@Path("/exportexecl/{json}.json")
+		@Produces(MediaType.APPLICATION_JSON)
+		public FeedBack getQuestionexportexecl(@PathParam("json") String json) throws Exception{
+			FeedBack fb = new FeedBack();
+			try {
+				factory = BizFactory.newInstance();
+				rBiz = factory.getRemarkBiz();
+				fb = rBiz.getFeedbackExecl(json);
+			}  catch (BOException be) {
+				log.info("getQuestion------" + be.getErrorMessage().getError());
+				throw new RestRequestException(be.getErrorMessage());
+			} catch (Exception e) {
+				log.error("", e);
+			}
+			return fb;
+		}
 }
