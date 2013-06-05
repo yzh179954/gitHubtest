@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /.idea
 topic.iml
 .classpath
@@ -9,3 +10,11 @@ hs_err_pid*.log
 /bin/*
 questionIndex
 docs
+=======
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+>>>>>>> 3e249ac45a286e546146fe0cf996021a9d9e93bd
