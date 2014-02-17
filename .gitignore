@@ -1,6 +1,20 @@
+<<<<<<< HEAD
+/.idea
+topic.iml
+.classpath
+.project
+.settings
+hs_err_pid*.log
+/target/
+/WebRoot/WEB-INF/classes/
+/bin/*
+questionIndex
+docs
+=======
 *.class
 
 # Package Files #
 *.jar
 *.war
 *.ear
+>>>>>>> 3e249ac45a286e546146fe0cf996021a9d9e93bd

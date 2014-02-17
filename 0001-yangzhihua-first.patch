@@ -1,0 +1,594 @@
+From 33f6e724ac5ba8d98aebef562060652343944d12 Mon Sep 17 00:00:00 2001
+From: yzh179954 <425273175@qq.com>
+Date: Wed, 5 Jun 2013 08:51:25 +0800
+Subject: [PATCH] yangzhihua first
+
+---
+ src/main/java/com/haotiben/feedback/VO/Page.java   |    2 +-
+ .../java/com/haotiben/feedback/VO/SearchValue.java |    6 +-
+ .../com/haotiben/feedback/biz/QuestionBiz.java     |   10 ++-
+ .../java/com/haotiben/feedback/biz/RemarkBiz.java  |    9 ++-
+ .../feedback/biz/impl/BaseInfoBizImpl.java         |    2 +-
+ .../feedback/biz/impl/QuestionBizImpl.java         |   72 ++++++++++++++++++--
+ .../haotiben/feedback/biz/impl/RemarkBizImpl.java  |   65 ++++++++++++++++--
+ .../feedback/controller/FeedBackController.java    |   24 +++++++
+ .../feedback/controller/QuestionController.java    |   25 +++++++
+ .../controller/client/StudentController.java       |    2 +-
+ .../controller/client/TeacherController.java       |    3 +-
+ .../feedback/dao/impl/QuestionDaoImpl.java         |    1 +
+ .../haotiben/feedback/dao/impl/RemarkDaoImpl.java  |    1 +
+ .../java/com/haotiben/feedback/model/Remark.java   |    1 +
+ .../haotiben/feedback/util/ExportExcelTest.java    |   52 ++++++++++++++
+ src/main/resources/dbinfo.properties               |   20 ++++--
+ src/main/webapp/WEB-INF/web.xml                    |   11 +++
+ 17 files changed, 282 insertions(+), 24 deletions(-)
+ create mode 100644 src/main/java/com/haotiben/feedback/util/ExportExcelTest.java
+
+diff --git a/src/main/java/com/haotiben/feedback/VO/Page.java b/src/main/java/com/haotiben/feedback/VO/Page.java
+index 5480a9f..49a2627 100644
+--- a/src/main/java/com/haotiben/feedback/VO/Page.java
++++ b/src/main/java/com/haotiben/feedback/VO/Page.java
+@@ -93,6 +93,6 @@ public class Page implements Serializable {
+ 		return endIndex;
+ 	}
+ public static void main(String[] args) {
+-	new Page(11,1,10);
++	new Page(11,2,10);
+ }
+ }
+diff --git a/src/main/java/com/haotiben/feedback/VO/SearchValue.java b/src/main/java/com/haotiben/feedback/VO/SearchValue.java
+index 511f7d2..474ee0a 100644
+--- a/src/main/java/com/haotiben/feedback/VO/SearchValue.java
++++ b/src/main/java/com/haotiben/feedback/VO/SearchValue.java
+@@ -1,6 +1,8 @@
+ package com.haotiben.feedback.VO;
+ 
+ import java.io.Serializable;
++import java.util.Date;
++
+ 
+ public class SearchValue implements Serializable {
+ 	private static final long serialVersionUID = 1L;
+@@ -13,7 +15,9 @@ public class SearchValue implements Serializable {
+ 	public int pageCount;//当前页码
+ 	public String order;// 正反序
+ 	public String sortBy;// 属性名称
+-	public int pageSize = 3;//一页显示记录数
++	public int pageSize = 3;//默认一页显示记录数
++	public String datebegin;
++	public String dateend;
+ 	public SearchValue() {
+ 		super();
+ 	}
+diff --git a/src/main/java/com/haotiben/feedback/biz/QuestionBiz.java b/src/main/java/com/haotiben/feedback/biz/QuestionBiz.java
+index e3786df..bc465e7 100644
+--- a/src/main/java/com/haotiben/feedback/biz/QuestionBiz.java
++++ b/src/main/java/com/haotiben/feedback/biz/QuestionBiz.java
+@@ -12,10 +12,18 @@ public interface QuestionBiz {
+ 	 */
+ 	public Question getQuestion(long questionId) throws Exception;
+ 	/**
+-	 * 获取试题信息
++	 * 获取试题信息   返回分页的数据信息
+ 	 * @param json JSON格式参数转化的字符串
+ 	 * @return
+ 	 * @throws Exception
+ 	 */
+ 	public FeedBack getQuestion(String json)throws Exception;
++	/**
++	 * 获取试题信息   返回一个不分页的信息
++	 * @param json JSON格式参数转化的字符串
++	 * @return
++	 * @throws Exception
++	 */
++	public FeedBack getQuestionExecl(String json) throws Exception;
++
+ }
+diff --git a/src/main/java/com/haotiben/feedback/biz/RemarkBiz.java b/src/main/java/com/haotiben/feedback/biz/RemarkBiz.java
+index 16510cd..b4d31f8 100644
+--- a/src/main/java/com/haotiben/feedback/biz/RemarkBiz.java
++++ b/src/main/java/com/haotiben/feedback/biz/RemarkBiz.java
+@@ -8,11 +8,18 @@ public interface RemarkBiz {
+ 	/**
+ 	 * 获取反馈信息
+ 	 * @param json JSON格式参数转化的字符串
+-	 * @return
++	 * @return  改方法返回包含分页数据
+ 	 * @throws Exception
+ 	 */
+ 	public FeedBack getFeedBack(String json)throws Exception;
+ 	/**
++	 * 获取反馈信息
++	 * @param json JSON格式参数转化的字符串
++	 * @return  改方法返回数据不含分页数据
++	 * @throws Exception
++	 */
++	public FeedBack getFeedbackExecl(String json) throws Exception;
++	/**
+ 	 * 根据试题ID查询该题的反馈信息
+ 	 * @param questionId
+ 	 * @return
+diff --git a/src/main/java/com/haotiben/feedback/biz/impl/BaseInfoBizImpl.java b/src/main/java/com/haotiben/feedback/biz/impl/BaseInfoBizImpl.java
+index ed5f811..7d1c2e2 100644
+--- a/src/main/java/com/haotiben/feedback/biz/impl/BaseInfoBizImpl.java
++++ b/src/main/java/com/haotiben/feedback/biz/impl/BaseInfoBizImpl.java
+@@ -10,7 +10,7 @@ public class BaseInfoBizImpl implements BaseInfoBiz {
+ 	private static Logger log = Logger.getLogger(BaseInfoBizImpl.class);
+ 	private DaoFactory factory = null;
+ 	private BaseInfoDao bDao = null;
+-	@Override
++
+ 	public String getBaseInfo(String table,String code) throws Exception {
+ 		String name = "";
+ 		String sql = "";
+diff --git a/src/main/java/com/haotiben/feedback/biz/impl/QuestionBizImpl.java b/src/main/java/com/haotiben/feedback/biz/impl/QuestionBizImpl.java
+index 56c2c22..078de97 100644
+--- a/src/main/java/com/haotiben/feedback/biz/impl/QuestionBizImpl.java
++++ b/src/main/java/com/haotiben/feedback/biz/impl/QuestionBizImpl.java
+@@ -150,10 +150,10 @@ public class QuestionBizImpl implements QuestionBiz {
+ 			}
+ 			if (type.equals("RS")) {
+ 				// 查询结果集的SQL
+-				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime  ");
++				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime ,QUESTION_FETCH.CREATE_AT as questionFetchTime ");
+ 
+ 			}
+-			sql.append(" from QUESTION left join QUESTION_ANALYSIS_ANSWER on QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID  where QUESTION.ID > 0  and QUESTION.HELP = 1 ");
++			sql.append(" from QUESTION left join QUESTION_ANALYSIS_ANSWER on QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID left join QUESTION_FETCH on  QUESTION.ID =QUESTION_FETCH.QUESTION_ID where QUESTION.ID > 0  and QUESTION.HELP=1 ");
+ 			// 开始组装动态参数条件
+ 
+ 			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
+@@ -165,9 +165,10 @@ public class QuestionBizImpl implements QuestionBiz {
+ 			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
+ 				sql.append(" and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
+ 						+ "'");
+-			if(!sv.questionType.equals("all")){
++			if(!"all".equals(sv.questionType)){
++			//if(!sv.questionType.equals("all")){
+ 				if(sv.questionType == null || sv.questionType.equals("")){
+-					sql.append(" and QUESTION.STATUS = ' ' ");
++//					sql.append(" and QUESTION.STATUS = ' ' ");
+ 				}else{
+ 					sql.append(" and QUESTION.STATUS = '"+sv.questionType+"' ");
+ 				}
+@@ -175,6 +176,23 @@ public class QuestionBizImpl implements QuestionBiz {
+ 			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
+ 				sql.append(" and QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME = '"
+ 						+ sv.teacherUserName + "'");
++//			if(sv.datebegin!=null&&sv.dateend!=null){
++//			sql.append(" and questionResolveTime>='"+sv.datebegin+"' and questionResolveTime<='"+sv.dateend+"'");
++//			}
++//			else if(sv.datebegin!=null&&sv.dateend==null){
++//				sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"'");
++//
++//			}
++//			else if(sv.dateend!=null&&sv.datebegin==null){
++//				sql.append(" and QUESTION_REMARK.CREATE_AT<='"+sv.datebegin+"'");
++//			}
++			if(sv.datebegin !=null&&!"".equals(sv.datebegin)){
++				sql.append(" and QUESTION_ANALYSIS_ANSWER.CREATE_AT>='"+sv.datebegin+"'");
++			}
++			if(sv.dateend!=null&&!"".equals(sv.dateend)){
++				sql.append(" and QUESTION_ANALYSIS_ANSWER.CREATE_AT<='"+sv.dateend+"'");
++			}
++		//	sql.append("to_days(QUESTION.CREATE_AT)>=to_days(QUESTION.CREATE_AT)");
+ 			if (sv.order == null || sv.order.equals(""))
+ 				sv.order = "asc";
+ 			if(type.equals("RS"))
+@@ -190,4 +208,50 @@ public class QuestionBizImpl implements QuestionBiz {
+ 		}
+ 		return sql.toString();
+ 	}
++
++
++
++	public static void main(String[] args){
++		SearchValue sv=null;
++		try {
++			sv=new QuestionBizImpl().getSearchValue("{\"datebegin\":\"2012-11-23 14:50:01\"}");
++			System.out.println(sv.datebegin);
++			System.out.println(sv.dateend);
++		} catch (Exception e) {
++			// TODO Auto-generated catch block
++			e.printStackTrace();
++		}
++	}
++	@Override
++	public FeedBack getQuestionExecl(String json) throws Exception {
++		FeedBack fb = new FeedBack();
++		Page page = null;
++		List<Remark> remarks = null;
++		SearchValue sv = new SearchValue();
++		try {
++			factory = DaoFactory.newInstance();
++			factory.beginTransaction();
++			qDao = factory.getQuestionDao();
++			sv = getSearchValue(json);
++				remarks = getRemarks(sv, qDao, page);// rDao.getPageRemarks(getSql(sv,
++												// "RS", page));
++				log.info("查询当前页的记录数 : " + remarks.size());
++				factory.commit();
++				fb.remarks = remarks;
++
++
++		} catch (Exception e) {
++			log.error("方法  getFeedBack 出现异常......", e);
++			factory.rollBack();
++			throw e;
++		} finally {
++			try {
++				factory.release();
++				log.info("Connection is closed......");
++			} catch (Exception e2) {
++				log.error("Connection closeing error....", e2);
++			}
++		}
++		return fb;
++	}
+ }
+diff --git a/src/main/java/com/haotiben/feedback/biz/impl/RemarkBizImpl.java b/src/main/java/com/haotiben/feedback/biz/impl/RemarkBizImpl.java
+index 9ba0180..0471661 100644
+--- a/src/main/java/com/haotiben/feedback/biz/impl/RemarkBizImpl.java
++++ b/src/main/java/com/haotiben/feedback/biz/impl/RemarkBizImpl.java
+@@ -54,6 +54,7 @@ public class RemarkBizImpl implements RemarkBiz {
+ 				fb.total = page.getTotal();
+ 				fb.currentPage = page.getCount();
+ 				fb.pageSize = page.getPageSize();
++				fb.count=page.getTotalRow();
+ 			}
+ 		} catch (Exception e) {
+ 			log.error("方法  getFeedBack 出现异常......", e);
+@@ -70,6 +71,7 @@ public class RemarkBizImpl implements RemarkBiz {
+ 		return fb;
+ 	}
+ 
++
+ 	/**
+ 	 * 获取返回报表信息
+ 	 *
+@@ -133,31 +135,52 @@ public class RemarkBizImpl implements RemarkBiz {
+ 			}
+ 			if (type.equals("RS")) {
+ 				// 查询结果集的SQL
+-				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION_REMARK.REMARK_TYPE as remarkType,QUESTION_REMARK.CREATE_AT as remarkTime,QUESTION_REMARK.REMARK as remark,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime  ");
++				sql.append("SELECT QUESTION.ID as questionId,QUESTION.IMAGE_URL as imageUrl,QUESTION.STUDENT_USERNAME as studentUserName,QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME as teacherUserName,QUESTION_REMARK.REMARK_TYPE as remarkType,QUESTION_REMARK.CREATE_AT as remarkTime,QUESTION_REMARK.REMARK as remark,QUESTION.SUBJECT_CODE as subject,QUESTION.CREATE_AT as questionUpTime,QUESTION_ANALYSIS_ANSWER.CREATE_AT as questionResolveTime,QUESTION_FETCH.CREATE_AT as questionfetchtime ");
+ 
+ 			}
+-			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER,QUESTION_REMARK where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID and QUESTION.ID=QUESTION_REMARK.QUESTION_ID ");
++			sql.append("from QUESTION,QUESTION_ANALYSIS_ANSWER,QUESTION_REMARK,QUESTION_FETCH where QUESTION.ID=QUESTION_ANALYSIS_ANSWER.QUESTION_ID and QUESTION.ID=QUESTION_REMARK.QUESTION_ID and QUESTION.ID=QUESTION_FETCH.QUESTION_ID");
+ 			// 开始组装动态参数条件
+ 			if (sv.remarkType != -1)
+ 				sql.append(" and QUESTION_REMARK.REMARK_TYPE = "
+ 						+ sv.remarkType);
+ 			else
+ 				sql.append(" and (QUESTION_REMARK.REMARK_TYPE = 1 or QUESTION_REMARK.REMARK_TYPE = 0) ");
+-			if (sv.schoolStageCode != null && !sv.schoolStageCode.equals(""))
++			if (sv.schoolStageCode != null && !sv.schoolStageCode.trim().equals(""))
+ 				sql.append(" and QUESTION.SCHOOL_STAGE_CODE = '"
+ 						+ sv.schoolStageCode + "'");
+-			if (sv.studentUserName != null && !sv.studentUserName.equals(""))
++			if (sv.studentUserName != null && !sv.studentUserName.trim().equals(""))
+ 				sql.append(" and QUESTION.STUDENT_USERNAME = '"
+ 						+ sv.studentUserName + "'");
+-			if (sv.subjectCode != null && !sv.subjectCode.equals(""))
++			if (sv.subjectCode != null && !sv.subjectCode.trim().equals(""))
+ 				sql.append(" and QUESTION.SUBJECT_CODE ='" + sv.subjectCode
+ 						+ "'");
+-			if (sv.teacherUserName != null && !sv.teacherUserName.equals(""))
++			if (sv.teacherUserName != null && !sv.teacherUserName.trim().equals(""))
+ 				sql.append(" and QUESTION_ANALYSIS_ANSWER.TEACHER_USERNAME = '"
+ 						+ sv.teacherUserName + "'");
++
++//			if(sv.datebegin!=null&&!"".equals(sv.datebegin)&&sv.dateend!=null&&!"".equals(sv.dateend)){
++//			sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"' and QUESTION_REMARK.CREATE_AT<='"+sv.dateend+"'");
++//			}
++//			else if(sv.datebegin!=null&&sv.dateend==null){
++//				sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"'");
++//
++//			}
++//			else if(sv.dateend!=null&&sv.datebegin==null){
++//				sql.append(" and QUESTION_REMARK.CREATE_AT<='"+sv.dateend+"'");
++//			}
++			System.out.println("-----------"+sv.datebegin);
++			if(sv.datebegin !=null&&!"".equals(sv.datebegin)){
++				System.out.println("*********************");
++				sql.append(" and QUESTION_REMARK.CREATE_AT>='"+sv.datebegin+"'");
++			}
++			if(sv.dateend!=null&&!"".equals(sv.dateend)){
++				sql.append(" and QUESTION_REMARK.CREATE_AT<='"+sv.dateend+"'");
++			}
+ 			if (sv.order == null || sv.order.equals(""))
+ 				sv.order = "asc";
+ 			if(type.equals("RS"))
++
++
+ 				sql.append(" GROUP BY QUESTION.ID ");
+ 			sql.append("  order by QUESTION_REMARK.CREATE_AT " + sv.order);
+ 			if (page != null)
+@@ -223,4 +246,34 @@ public class RemarkBizImpl implements RemarkBiz {
+ 		}
+ 		return tft;
+ 	}
++
++
++	@Override
++	public FeedBack getFeedbackExecl(String json) throws Exception {
++		FeedBack fb = new FeedBack();
++		Page page = null;
++		List<Remark> remarks = null;
++		SearchValue sv = new SearchValue();
++		try {
++			factory = DaoFactory.newInstance();
++			factory.beginTransaction();
++			rDao = factory.getRemarkDao();
++			sv = getSearchValue(json);
++				remarks = getRemarks(sv, rDao, page);
++				factory.commit();
++				fb.remarks = remarks;
++		} catch (Exception e) {
++			log.error("方法  getFeedBack 出现异常......", e);
++			factory.rollBack();
++			throw e;
++		} finally {
++			try {
++				factory.release();
++				log.info("Connection is closed......");
++			} catch (Exception e2) {
++				log.error("Connection closeing error....", e2);
++			}
++		}
++		return fb;
++	}
+ }
+diff --git a/src/main/java/com/haotiben/feedback/controller/FeedBackController.java b/src/main/java/com/haotiben/feedback/controller/FeedBackController.java
+index 2f8e342..d5274f7 100644
+--- a/src/main/java/com/haotiben/feedback/controller/FeedBackController.java
++++ b/src/main/java/com/haotiben/feedback/controller/FeedBackController.java
+@@ -91,4 +91,28 @@ public class FeedBackController {
+ 		}
+ 		return tft;
+ 	}
++	/*
++	*
++	*导出execl返回信息列表
++	*
++	*
++	*/
++
++		@GET
++		@Path("/exportexecl/{json}.json")
++		@Produces(MediaType.APPLICATION_JSON)
++		public FeedBack getQuestionexportexecl(@PathParam("json") String json) throws Exception{
++			FeedBack fb = new FeedBack();
++			try {
++				factory = BizFactory.newInstance();
++				rBiz = factory.getRemarkBiz();
++				fb = rBiz.getFeedbackExecl(json);
++			}  catch (BOException be) {
++				log.info("getQuestion------" + be.getErrorMessage().getError());
++				throw new RestRequestException(be.getErrorMessage());
++			} catch (Exception e) {
++				log.error("", e);
++			}
++			return fb;
++		}
+ }
+diff --git a/src/main/java/com/haotiben/feedback/controller/QuestionController.java b/src/main/java/com/haotiben/feedback/controller/QuestionController.java
+index fd52edd..d02f5dc 100644
+--- a/src/main/java/com/haotiben/feedback/controller/QuestionController.java
++++ b/src/main/java/com/haotiben/feedback/controller/QuestionController.java
+@@ -42,4 +42,29 @@ public class QuestionController {
+ 		}
+ 		return fb;
+ 	}
++
++	/*
++	*
++	*导出execl返回信息列表
++	*
++	*
++	*/
++	@GET
++	@Path("/exportexecl/{json}.json")
++	@Produces(MediaType.APPLICATION_JSON)
++	public FeedBack getQuestionExecl(@PathParam("json") String json)throws Exception{
++		FeedBack fb = new FeedBack();
++		try {
++			factory = BizFactory.newInstance();
++			qBiz = factory.getQuestionBiz();
++			fb = qBiz.getQuestionExecl(json);
++		}  catch (BOException be) {
++			log.info("getQuestion------" + be.getErrorMessage().getError());
++			throw new RestRequestException(be.getErrorMessage());
++		} catch (Exception e) {
++			log.error("", e);
++		}
++		return fb;
++	}
++
+ }
+diff --git a/src/main/java/com/haotiben/feedback/controller/client/StudentController.java b/src/main/java/com/haotiben/feedback/controller/client/StudentController.java
+index 56cad76..8ad4127 100644
+--- a/src/main/java/com/haotiben/feedback/controller/client/StudentController.java
++++ b/src/main/java/com/haotiben/feedback/controller/client/StudentController.java
+@@ -30,7 +30,7 @@ public class StudentController {
+ 	public static void main(String[] args) {
+ 		StudentController sc = new StudentController();
+ 		try {
+-			sc.getStudentInfo("test");
++			sc.getStudentInfo("as");
+ 		} catch (Exception e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
+diff --git a/src/main/java/com/haotiben/feedback/controller/client/TeacherController.java b/src/main/java/com/haotiben/feedback/controller/client/TeacherController.java
+index 300e595..9af5665 100644
+--- a/src/main/java/com/haotiben/feedback/controller/client/TeacherController.java
++++ b/src/main/java/com/haotiben/feedback/controller/client/TeacherController.java
+@@ -31,7 +31,8 @@ public class TeacherController {
+ 	public static void main(String[] args) {
+ 		TeacherController tc = new TeacherController();
+ 		try {
+-			tc.getTeacherInfo("50");
++			TeacherInfo tinfo=tc.getTeacherInfo("liqin");
++			System.out.println(tinfo.getRealName());
+ 		} catch (Exception e) {
+ 			// TODO Auto-generated catch block
+ 			e.printStackTrace();
+diff --git a/src/main/java/com/haotiben/feedback/dao/impl/QuestionDaoImpl.java b/src/main/java/com/haotiben/feedback/dao/impl/QuestionDaoImpl.java
+index 9e63ea4..cf5abb9 100644
+--- a/src/main/java/com/haotiben/feedback/dao/impl/QuestionDaoImpl.java
++++ b/src/main/java/com/haotiben/feedback/dao/impl/QuestionDaoImpl.java
+@@ -101,6 +101,7 @@ public class QuestionDaoImpl extends BaseDaoImpl implements QuestionDao {
+ 				remark.teacherUserName = rs.getString("teacherUserName");
+ 				remark.questionResolveTime = rs.getTimestamp("questionResolveTime");
+ 				remark.questionUpTime = rs.getTimestamp("questionUpTime");
++				remark.questionFetchTime=rs.getTimestamp("questionFetchTime");
+ 				remark.subject = rs.getString("subject");
+ 				remarks.add(remark);
+ 			}
+diff --git a/src/main/java/com/haotiben/feedback/dao/impl/RemarkDaoImpl.java b/src/main/java/com/haotiben/feedback/dao/impl/RemarkDaoImpl.java
+index 5d0eb16..267daeb 100644
+--- a/src/main/java/com/haotiben/feedback/dao/impl/RemarkDaoImpl.java
++++ b/src/main/java/com/haotiben/feedback/dao/impl/RemarkDaoImpl.java
+@@ -39,6 +39,7 @@ public class RemarkDaoImpl extends BaseDaoImpl implements RemarkDao {
+ 				remark.teacherUserName = rs.getString("teacherUserName");
+ 				remark.questionResolveTime = rs.getTimestamp("questionResolveTime");
+ 				remark.questionUpTime = rs.getTimestamp("questionUpTime");
++				remark.questionFetchTime=rs.getTimestamp("questionFetchTime");
+ 				remark.subject = rs.getString("subject");
+ 				remarks.add(remark);
+ 			}
+diff --git a/src/main/java/com/haotiben/feedback/model/Remark.java b/src/main/java/com/haotiben/feedback/model/Remark.java
+index 2903dce..602904e 100644
+--- a/src/main/java/com/haotiben/feedback/model/Remark.java
++++ b/src/main/java/com/haotiben/feedback/model/Remark.java
+@@ -15,6 +15,7 @@ public class Remark implements Serializable {
+ 	public String subject;
+ 	public Date questionUpTime;
+ 	public Date questionResolveTime;
++	public Date questionFetchTime;
+ 	public Remark() {
+ 		super();
+ 	}
+diff --git a/src/main/java/com/haotiben/feedback/util/ExportExcelTest.java b/src/main/java/com/haotiben/feedback/util/ExportExcelTest.java
+new file mode 100644
+index 0000000..e38fe2d
+--- /dev/null
++++ b/src/main/java/com/haotiben/feedback/util/ExportExcelTest.java
+@@ -0,0 +1,52 @@
++package com.haotiben.feedback.util;
++
++import java.util.List;
++
++import javax.servlet.http.HttpServlet;
++import javax.servlet.http.HttpServletRequest;
++import javax.servlet.http.HttpServletResponse;
++
++import org.apache.poi.hssf.usermodel.HSSFCell;
++import org.apache.poi.hssf.usermodel.HSSFCellStyle;
++import org.apache.poi.hssf.usermodel.HSSFRow;
++import org.apache.poi.hssf.usermodel.HSSFSheet;
++import org.apache.poi.hssf.usermodel.HSSFWorkbook;
++
++public class ExportExcelTest extends HttpServlet{
++
++
++public void doGet(HttpServletRequest request,HttpServletResponse response) {
++	response.setContentType("octets/stream");
++	response.addHeader("Content-Disposition",
++            "attachment;filename=test.xls");
++
++
++//	 String[] excelHeader = { "Sno", "Name", "Age"};
++//	 public HSSFWorkbook export(List list){
++//	HSSFWorkbook hwb = null;
++//	  HSSFSheet sheet = hwb.createSheet("Campaign");
++//	  HSSFRow row = sheet.createRow((int) 0);
++//	  HSSFCellStyle style = hwb.createCellStyle();
++//	  style.setAlignment(HSSFCellStyle.ALIGN_CENTER);
++//
++//
++//	  for (int i = 0; i < excelHeader.length; i++) {
++//          HSSFCell cell = row.createCell(i);
++//          cell.setCellValue(excelHeader[i]);
++//          cell.setCellStyle(style);
++//          sheet.autoSizeColumn(i);
++//      }
++//	  for (int i = 0; i < list.size(); i++) {
++//          row = sheet.createRow(i + 1);
++//          = list.get(i);
++//          row.createCell(0).setCellValue(student.getSno());
++//          row.createCell(1).setCellValue(student.getName());
++//          row.createCell(2).setCellValue(student.getAge());
++//      }
++//	return hwb;
++
++
++
++
++	 }
++}
+diff --git a/src/main/resources/dbinfo.properties b/src/main/resources/dbinfo.properties
+index 15797e7..a35d909 100644
+--- a/src/main/resources/dbinfo.properties
++++ b/src/main/resources/dbinfo.properties
+@@ -1,8 +1,11 @@
+ #feedback data source
+ db_driverName=com.mysql.jdbc.Driver
+-db_url=jdbc:mysql://localhost:3306/solution?autoReconnect=true
+-db_username=root
+-db_password =root
++#db_url=jdbc:mysql://localhost:3306/solution?autoReconnect=true
++#db_username=root
++#db_password =123
++db_url=jdbc:mysql://192.168.2.252:3309/solution?autoReconnect=true
++db_username=yangzh
++db_password=yangzh
+ #db_url=jdbc:mysql://10.200.69.208:3308/solution?autoReconnect=true
+ #db_username=huangcp
+ #db_password =huangcp!@#
+@@ -11,14 +14,17 @@ db_password =root
+ baseurl=http://solution.b0.upaiyun.com
+ 
+ #student info system
+-#oauth = http://192.168.1.252:8603/oauth/manage/
++oauth = http://192.168.2.252:8501/oauth/manage/
+ 
+-oauth = http://10.200.69.203:8603/oauth/manage/
++#oauth = http://10.200.69.203:8603/oauth/manage/
+ 
+-privilege = http://10.200.69.208:8202/privilege/users/name/
++#privilege = http://10.200.69.208:8202/privilege/users/name/
+ 
+ #privilege info system
+-#privilege = http://192.168.1.252:8201/privilege/users/name/
++privilege = http://192.168.2.252:8100/privilege/users/name/
++
++#privilege = http://localhost:8080/privilege/users/name/
++
+ 
+ #error code
+ a03101=Parameter is null
+diff --git a/src/main/webapp/WEB-INF/web.xml b/src/main/webapp/WEB-INF/web.xml
+index 5e6827a..a7117b6 100644
+--- a/src/main/webapp/WEB-INF/web.xml
++++ b/src/main/webapp/WEB-INF/web.xml
+@@ -34,4 +34,15 @@
+ 		<servlet-name>MyWebApplication</servlet-name>
+ 		<url-pattern>/*</url-pattern>
+ 	</servlet-mapping>
++	<!--  
++	<servlet>
++	<servlet-name>ExportExeclTest</servlet-name>
++	<servlet-class>com.haotiben.feedback.util.ExportExeclTest</servlet-class>
++	</servlet>
++	<servlet-mapping>
++	<servlet-name>ExportExeclTest</servlet-name>
++	<url-pattern>/servlet/ExportExeclTest</url-pattern>
++	
++	</servlet-mapping>
++	-->
+ </web-app>
+-- 
+1.7.10.msysgit.1
+
